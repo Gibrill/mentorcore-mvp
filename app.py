@@ -13,7 +13,7 @@ st.subheader("Asistent Operațional B2B")
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+    model_name="gemini-1.0-pro",
     system_instruction="""ROL: Ești 'MentorCore', asistent B2B strict operațional. Nu oferi salutări sau explicații. Returnezi exclusiv output determinist.
 REGULI:
 1. PROGRAMARE: JSON valid { "intent": "calendar_event", "title": "...", "start_date": "YYYY-MM-DDTHH:MM:SS", "duration_minutes": 60 }

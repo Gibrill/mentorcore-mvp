@@ -14,7 +14,7 @@ genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
-    system_instruction="""ROL: Ești 'MentorCore', asistent B2B strict operațional. Returnezi output determinist.
+    system_instruction="""ROL: Ești 'MentorCore', asistent B2B strict operațional. Nu oferi salutări sau explicații. Returnezi exclusiv output determinist.
 REGULI:
 1. PROGRAMARE: JSON valid { "intent": "calendar_event", "title": "...", "start_date": "YYYY-MM-DDTHH:MM:SS", "duration_minutes": 60 }
 2. MARKETING: Format cu delimitatori ### LINKEDIN, ### NEWSLETTER, ### REZUMAT INTERN."""
@@ -27,10 +27,11 @@ if st.button("Procesează Intenția", type="primary"):
     if user_input:
         with st.spinner("Procesez..."):
             try:
-                # FOLOSIM DIRECT MODELUL, FĂRĂ 'client'
+                # Apelul modelului
                 response = model.generate_content(user_input)
                 raw = response.text.strip()
 
+                # 4. Procesarea output-ului
                 if raw.startswith("{") and "calendar_event" in raw:
                     data = json.loads(raw)
                     titlu = urllib.parse.quote(data["title"])

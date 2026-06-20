@@ -2,26 +2,14 @@ import streamlit as st
 import os
 import requests
 
-st.title("MentorCore 🧠")
+st.title("MentorCore 🧠 - Debug Mode")
 api_key = os.environ.get("GEMINI_API_KEY")
-user_input = st.text_area("Ce rezolvăm astăzi?")
 
-if st.button("Procesează"):
-    if api_key and user_input:
-        # Folosim gemini-1.0-pro, care este modelul standard, stabil și disponibil global
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key={api_key}"
-        
-        data = {"contents": [{"parts": [{"text": f"ROL: MentorCore asistent B2B. INPUT: {user_input}"}]}]}
-        
-        try:
-            response = requests.post(url, headers={'Content-Type': 'application/json'}, json=data)
-            result = response.json()
-            
-            if "candidates" in result:
-                st.markdown(result["candidates"][0]["content"]["parts"][0]["text"])
-            else:
-                st.error(f"Eroare API: {result}")
-        except Exception as e:
-            st.error(f"Eroare: {e}")
+if st.button("Verifică modele disponibile"):
+    if api_key:
+        # Încercăm să listăm modelele pe v1
+        url = f"https://generativelanguage.googleapis.com/v1/models?key={api_key}"
+        response = requests.get(url)
+        st.write(response.json())
     else:
-        st.error("Cheia API lipsește!")
+        st.error("Cheia API nu e setată în Secrets!")

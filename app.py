@@ -2,7 +2,7 @@ import os
 import json
 import urllib.parse
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 from google.genai import types
 
 # 1. Configurarea interfeței (Cum va arăta pe ecran)

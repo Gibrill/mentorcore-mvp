@@ -4,53 +4,44 @@ import urllib.parse
 import streamlit as st
 import google.generativeai as genai
 
-# 1. Configurarea interfeței
+# 1. Configurare UI
 st.set_page_config(page_title="MentorCore B2B", page_icon="🧠", layout="centered")
 st.title("MentorCore 🧠")
 st.subheader("Asistent Operațional B2B")
 
-# Configurare Gemini (folosim google-generativeai)
+# 2. Configurare Model
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Definire model cu instrucțiunile de sistem incluse
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
-    system_instruction="""ROL: Ești 'MentorCore', un asistent AI B2B strict operațional... (inserează aici tot textul tău lung de system instruction)"""
+    system_instruction="""ROL: Ești 'MentorCore', asistent B2B strict operațional. Nu oferi salutări sau explicații. Returnezi exclusiv output determinist.
+REGULI:
+1. PROGRAMARE: JSON valid { "intent": "calendar_event", "title": "...", "start_date": "YYYY-MM-DDTHH:MM:SS", "duration_minutes": 60 }
+2. MARKETING: Format cu delimitatori ### LINKEDIN, ### NEWSLETTER, ### REZUMAT INTERN."""
 )
 
-# 2. Zona de Input
-user_input = st.text_area("Ce rezolvăm astăzi?", placeholder="Ex: Programează o ședință...", height=100)
+# 3. Interfață
+user_input = st.text_area("Ce rezolvăm astăzi?", placeholder="Ex: Programează ședință cu Mihai vineri 15:00...", height=100)
 
-# 3. Logica de Execuție
 if st.button("Procesează Intenția", type="primary"):
     if user_input:
-        with st.spinner("Analizez..."):
+        with st.spinner("Procesez..."):
             try:
-                # Apelul simplificat al modelului
                 response = model.generate_content(user_input)
-                raw_response = response.text.strip()
+                raw = response.text.strip()
 
-                # 4. Procesarea output-ului
-                if raw_response.startswith("{") and "calendar_event" in raw_response:
-                    date_json = json.loads(raw_response)
-                    titlu_codat = urllib.parse.quote(date_json["title"])
-                    data_start = date_json["start_date"].replace("-", "").replace(":", "").replace("T", "")
+                if raw.startswith("{") and "calendar_event" in raw:
+                    data = json.loads(raw)
+                    titlu = urllib.parse.quote(data["title"])
+                    # Formatare ISO curată
+                    start = data["start_date"].replace("-", "").replace(":", "").replace("T", "")
+                    link = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={titlu}&dates={start}Z/{start}Z"
                     
-                    link_calendar = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={titlu_codat}&dates={data_start}/{data_start}"
-                    
-                    st.success("Datele evenimentului au fost extrase!")
-                    st.markdown(f'<a href="{link_calendar}" target="_blank" style="display: block; text-align: center; padding: 15px; background-color: #4CAF50; color: white; font-weight: bold; text-decoration: none; border-radius: 8px;">📅 Salvează în Google Calendar</a>', unsafe_allow_html=True)
-                
+                    st.success("Eveniment pregătit!")
+                    st.markdown(f'<a href="{link}" target="_blank" style="display:block; text-align:center; padding:15px; background:#4CAF50; color:white; font-weight:bold; border-radius:8px; text-decoration:none;">📅 Adaugă în Calendar</a>', unsafe_allow_html=True)
                 else:
-                    st.success("Conținut generat cu succes!")
-                    st.markdown(raw_response)
-
+                    st.markdown(raw)
             except Exception as e:
-                st.error(f"Eroare de procesare: {e}")
+                st.error(f"Eroare: {e}")
     else:
-        st.warning("Te rog introdu o comandă.")
-
-            except Exception as e:
-                st.error(f"Eroare de sistem: {e}")
-    else:
-        st.warning("Te rog introdu o comandă validă înainte de a apăsa butonul.")
+        st.warning("Introdu o comandă validă.")
